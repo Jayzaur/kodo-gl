@@ -2,7 +2,7 @@
 
 #include "kodo-gl.hpp"
 
-#include "Texture.h"
+#include "Texture.hpp"
 
 namespace kodogl
 {

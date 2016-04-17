@@ -192,7 +192,7 @@ namespace kodogl
 			if (glyph.Codepoint == size_t( -1 ))
 				continue;
 
-			glyph.Kerning.clear();
+			//glyph.Kerning.clear();
 
 			for (const auto& kpj : glyphs)
 			{
@@ -204,7 +204,7 @@ namespace kodogl
 
 				if (kerning.x)
 				{
-					glyph.Kerning.push_back( TextureFontKerning{ prevGlyph.Codepoint, kerning.x / static_cast<float_t>(HRES * HRES) } );
+					//glyph.Kerning.push_back( TextureFontKerning{ prevGlyph.Codepoint, kerning.x / static_cast<float_t>(HRES * HRES) } );
 				}
 			}
 		}

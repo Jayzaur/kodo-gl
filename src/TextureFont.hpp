@@ -5,7 +5,7 @@
 #include <utf8/utf8.h>
 #include <glm/glm.hpp>
 
-#include "Texture.h"
+#include "Texture.hpp"
 
 #include "VertexBuffer.hpp"
 
@@ -81,9 +81,6 @@ namespace kodogl
 
 		// Normalized region occupied by this glyph within a texture atlas.
 		const NormalizedRegion Region;
-
-		// A vector of kerning pairs relative to this glyph.
-		std::vector<TextureFontKerning> Kerning;
 
 		AtlasGlyph() : Codepoint( 0 ), Width( 0 ), Height( 0 ), OffsetX( 0 ), OffsetY( 0 ), AdvanceX( 0 ), AdvanceY( 0 ) {}
 		AtlasGlyph( uint32_t codepoint, const NormalizedRegion& region ) :

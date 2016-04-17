@@ -68,5 +68,7 @@ namespace kodogl
 
 			throw ShaderException( infoLog );
 		}
+
+		shaders.clear();
 	}
 }

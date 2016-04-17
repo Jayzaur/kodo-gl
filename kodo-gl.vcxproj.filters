@@ -492,9 +492,6 @@
     <ClInclude Include="deps\utf8\utf8.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Texture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Shader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -751,6 +748,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="deps\freetype\ft2build.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Texture.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

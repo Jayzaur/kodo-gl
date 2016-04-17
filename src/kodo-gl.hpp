@@ -10,14 +10,14 @@
 #include <map>
 #include <assert.h>
 
-#pragma comment (lib, "/freetype/freetype263")
+#pragma comment (lib, "deps/freetype/freetype263")
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
 #pragma comment (lib, "opengl32")
 #include <gl_core_4_4.hpp>
 
-#pragma comment (lib, "GLFW/glfw3")
+#pragma comment (lib, "deps/GLFW/glfw3")
 #include <GLFW/glfw3.h>
 //#define GLFW_EXPOSE_NATIVE_WIN32
 //#define GLFW_EXPOSE_NATIVE_WGL

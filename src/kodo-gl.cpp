@@ -1,9 +1,7 @@
 #include "kodo-gl.hpp"
 
 #include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 #include "VertexBuffer.hpp"
 #include "TextureAtlas.hpp"
@@ -20,13 +18,22 @@ enum class UniformIds
 	Projection,
 };
 
-//std::unique_ptr<VertexBuffer<AtlasVertex>> textVBuffer;
 std::unique_ptr<ShaderProgram> textProgram;
 
 struct Vert
 {
 	float_t x, y;
 	float_t r, g, b, a;
+};
+
+class DrawingContext
+{
+public:
+
+	void Clear()
+	{
+
+	}
 };
 
 std::unique_ptr<ShaderProgram> testProgram;
@@ -45,7 +52,7 @@ double globalFrameTime;
 bool frameTimeStringChanged;
 std::string frameTimeString;
 
-void OnGLFWError( int error, const char* description )
+void OnGLFWError( int, const char* description )
 {
 	fprintf( stderr, "%s", description );
 }
@@ -127,7 +134,6 @@ void CreateTestVBuffer( const glm::vec4& target )
 		"}"
 		) );
 
-
 	std::vector<Uniform> uniforms = {
 		Uniform{ UniformIds::Model, "model" },
 		Uniform{ UniformIds::View, "view" },
@@ -205,6 +211,7 @@ void KodoMain()
 
 	atlas = std::make_unique<Atlas>();
 	atlas->Add( "PatuaOne", "assets/PatuaOne.ttf", 40 );
+	auto atlasUsed = atlas->Used();
 	atlas->Upload();
 
 	textProgram->Use();
