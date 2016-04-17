@@ -36,6 +36,7 @@
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
+    <CLRSupport>false</CLRSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -49,6 +50,7 @@
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
+    <CLRSupport>false</CLRSupport>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -96,6 +98,9 @@
       <AdditionalDependencies>legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <FullProgramDatabaseFile>true</FullProgramDatabaseFile>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /i /y /d $(ProjectDir)assets $(OutDir)assets</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -109,6 +114,9 @@
       <AdditionalDependencies>legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <FullProgramDatabaseFile>true</FullProgramDatabaseFile>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /i /y /d $(ProjectDir)assets $(OutDir)assets</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -118,13 +126,19 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>E:\Projects\kodo-gl\deps\freetype;E:\Projects\kodo-gl\deps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>E:\Projects\kodo-gl\deps;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /i /y /d $(ProjectDir)assets $(OutDir)assets</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -134,22 +148,113 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>E:\Projects\kodo-gl\deps\freetype;E:\Projects\kodo-gl\deps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>E:\Projects\kodo-gl\deps;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /i /y /d $(ProjectDir)assets $(OutDir)assets</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="deps\glm\detail\glm.cpp" />
     <ClCompile Include="deps\gl_core_4_4.cpp" />
     <ClCompile Include="src\kodo-gl.cpp" />
+    <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\TextureFont.cpp" />
     <ClCompile Include="src\VertexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="deps\freetype\freetype\config\ftconfig.h" />
+    <ClInclude Include="deps\freetype\freetype\config\ftheader.h" />
+    <ClInclude Include="deps\freetype\freetype\config\ftmodule.h" />
+    <ClInclude Include="deps\freetype\freetype\config\ftoption.h" />
+    <ClInclude Include="deps\freetype\freetype\config\ftstdlib.h" />
+    <ClInclude Include="deps\freetype\freetype\freetype.h" />
+    <ClInclude Include="deps\freetype\freetype\ftadvanc.h" />
+    <ClInclude Include="deps\freetype\freetype\ftbbox.h" />
+    <ClInclude Include="deps\freetype\freetype\ftbdf.h" />
+    <ClInclude Include="deps\freetype\freetype\ftbitmap.h" />
+    <ClInclude Include="deps\freetype\freetype\ftbzip2.h" />
+    <ClInclude Include="deps\freetype\freetype\ftcache.h" />
+    <ClInclude Include="deps\freetype\freetype\ftchapters.h" />
+    <ClInclude Include="deps\freetype\freetype\ftcid.h" />
+    <ClInclude Include="deps\freetype\freetype\fterrdef.h" />
+    <ClInclude Include="deps\freetype\freetype\fterrors.h" />
+    <ClInclude Include="deps\freetype\freetype\ftgasp.h" />
+    <ClInclude Include="deps\freetype\freetype\ftglyph.h" />
+    <ClInclude Include="deps\freetype\freetype\ftgxval.h" />
+    <ClInclude Include="deps\freetype\freetype\ftgzip.h" />
+    <ClInclude Include="deps\freetype\freetype\ftimage.h" />
+    <ClInclude Include="deps\freetype\freetype\ftincrem.h" />
+    <ClInclude Include="deps\freetype\freetype\ftlcdfil.h" />
+    <ClInclude Include="deps\freetype\freetype\ftlist.h" />
+    <ClInclude Include="deps\freetype\freetype\ftlzw.h" />
+    <ClInclude Include="deps\freetype\freetype\ftmac.h" />
+    <ClInclude Include="deps\freetype\freetype\ftmm.h" />
+    <ClInclude Include="deps\freetype\freetype\ftmodapi.h" />
+    <ClInclude Include="deps\freetype\freetype\ftmoderr.h" />
+    <ClInclude Include="deps\freetype\freetype\ftotval.h" />
+    <ClInclude Include="deps\freetype\freetype\ftoutln.h" />
+    <ClInclude Include="deps\freetype\freetype\ftpfr.h" />
+    <ClInclude Include="deps\freetype\freetype\ftrender.h" />
+    <ClInclude Include="deps\freetype\freetype\ftsizes.h" />
+    <ClInclude Include="deps\freetype\freetype\ftsnames.h" />
+    <ClInclude Include="deps\freetype\freetype\ftstroke.h" />
+    <ClInclude Include="deps\freetype\freetype\ftsynth.h" />
+    <ClInclude Include="deps\freetype\freetype\ftsystem.h" />
+    <ClInclude Include="deps\freetype\freetype\fttrigon.h" />
+    <ClInclude Include="deps\freetype\freetype\fttypes.h" />
+    <ClInclude Include="deps\freetype\freetype\ftwinfnt.h" />
+    <ClInclude Include="deps\freetype\freetype\ftxf86.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\autohint.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\ftcalc.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\ftdebug.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\ftdriver.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\ftgloadr.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\ftmemory.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\ftobjs.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\ftpic.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\ftrfork.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\ftserv.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\ftstream.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\fttrace.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\ftvalid.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\internal.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\psaux.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\pshints.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\services\svbdf.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\services\svcid.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\services\svgldict.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\services\svgxval.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\services\svkern.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\services\svmm.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\services\svotval.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\services\svpfr.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\services\svpostnm.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\services\svpscmap.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\services\svpsinfo.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\services\svsfnt.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\services\svttcmap.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\services\svtteng.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\services\svttglyf.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\services\svwinfnt.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\services\svxf86nm.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\sfnt.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\t1types.h" />
+    <ClInclude Include="deps\freetype\freetype\internal\tttypes.h" />
+    <ClInclude Include="deps\freetype\freetype\t1tables.h" />
+    <ClInclude Include="deps\freetype\freetype\ttnameid.h" />
+    <ClInclude Include="deps\freetype\freetype\tttables.h" />
+    <ClInclude Include="deps\freetype\freetype\tttags.h" />
+    <ClInclude Include="deps\freetype\freetype\ttunpat.h" />
+    <ClInclude Include="deps\freetype\ft2build.h" />
     <ClInclude Include="deps\GLFW\glfw3.h" />
     <ClInclude Include="deps\GLFW\glfw3native.h" />
     <ClInclude Include="deps\glm\common.hpp" />
@@ -307,6 +412,7 @@
     <ClInclude Include="src\VertexBuffer.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <Library Include="deps\freetype\freetype263.lib" />
     <Library Include="deps\GLFW\glfw3.lib" />
   </ItemGroup>
   <ItemGroup>
@@ -315,6 +421,7 @@
     </Font>
   </ItemGroup>
   <ItemGroup>
+    <None Include="assets\fragment-font.glsl" />
     <None Include="deps\glm\detail\func_common.inl" />
     <None Include="deps\glm\detail\func_exponential.inl" />
     <None Include="deps\glm\detail\func_geometric.inl" />
@@ -425,6 +532,17 @@
     <None Include="deps\glm\gtx\vector_query.inl" />
     <None Include="deps\glm\gtx\wrap.inl" />
     <ClCompile Include="src\TextureAtlas.cpp" />
+    <Text Include="assets\vertex-font.glsl">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </Text>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

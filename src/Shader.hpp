@@ -2,6 +2,9 @@
 
 #include "kodo-gl.hpp"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 namespace kodogl
 {
 	class ShaderException : public std::exception
@@ -13,6 +16,7 @@ namespace kodogl
 
 	class Shader
 	{
+		std::string source;
 		GLuint shaderHandle;
 		GLenum shaderType;
 
@@ -23,37 +27,50 @@ namespace kodogl
 			return shaderHandle;
 		}
 
-		std::string source;
+		Shader( const Shader& other ) = delete;
+
+		Shader( Shader&& other ) :
+			source( std::move( other.source ) ),
+			shaderHandle( other.shaderHandle ),
+			shaderType( other.shaderType )
+		{
+			other.shaderHandle = 0;
+			other.shaderType = 0;
+		}
 
 		explicit Shader( std::string source, GLenum type ) :
-			shaderHandle( 0 ),
-			shaderType( type ),
-			source( source )
+			source( source ),
+			shaderHandle( gl::CreateShader( type ) ),
+			shaderType( type )
 		{
 			Compile();
 		}
 
-		void Compile()
+		~Shader()
+		{
+			if (shaderHandle != 0)
+			{
+				gl::DeleteShader( shaderHandle );
+				shaderHandle = 0;
+			}
+		}
+
+		void Compile() const
 		{
 			auto sourcePtr = source.c_str();
 			auto compileStatus = 0;
 
-			shaderHandle = gl::CreateShader( shaderType );
 			gl::ShaderSource( shaderHandle, 1, &sourcePtr, nullptr );
 			gl::CompileShader( shaderHandle );
 			gl::GetShaderiv( shaderHandle, gl::COMPILE_STATUS, &compileStatus );
 
 			if (compileStatus == gl::FALSE_)
 			{
-				auto maxLength = 0;
-				gl::GetShaderiv( shaderHandle, gl::INFO_LOG_LENGTH, &maxLength );
+				auto infoLength = 0;
+				gl::GetShaderiv( shaderHandle, gl::INFO_LOG_LENGTH, &infoLength );
 
-				// The maxLength includes the NULL character.
-				std::string infoLog( maxLength, '\0' );
-				gl::GetShaderInfoLog( shaderHandle, maxLength, &maxLength, &infoLog[0] );
-
-				// We don't need the shader anymore.
-				gl::DeleteShader( shaderHandle );
+				std::string infoLog( infoLength, '\0' );
+				gl::GetShaderInfoLog( shaderHandle, infoLength, &infoLength, &infoLog[0] );
 
 				throw ShaderException( infoLog );
 			}
@@ -69,72 +86,80 @@ namespace kodogl
 			return Shader{ source, gl::FRAGMENT_SHADER };
 		}
 
-		static std::string Source( const std::string& filename )
-		{
-			FILE* file;
-			fopen_s( &file, filename.c_str(), "rb" );
-
-			if (!file)
-				throw ShaderException( "Unable to load shader source from file." );
-
-			fseek( file, 0, SEEK_END );
-			auto size = ftell( file );
-			fseek( file, 0, SEEK_SET );
-
-			std::string buffer( size, '\0' );
-			fread( &buffer[0], sizeof( char ), size, file );
-			fclose( file );
-			return buffer;
-		}
+		static std::string Source( const std::string& filename );
 	};
 
-	struct ShaderUniformDesc
+	struct Uniform
 	{
+		//
+		// Custom integral identifier of the uniform.
+		//
 		GLint Id;
+		//
+		// Name of the uniform.
+		//
 		std::string Name;
+		//
+		// Location of the uniform.
+		//
+		const GLint Location;
 
+		//
+		// Create a new uniform with the specified integral identifier and name.
+		//
 		template<typename TId>
-		ShaderUniformDesc( TId id, std::string name ) :
-			Id( static_cast<GLint>(id) ), Name( name )
+		Uniform( TId id, std::string name, GLint location = -1 ) :
+			Id( static_cast<GLint>(id) ), Name( name ), Location( location )
 		{
 		}
-	};
 
-	struct ShaderUniform
-	{
-		GLint Id;
-		GLint Location;
-		std::string Name;
-
-		ShaderUniform( GLint id, GLint location, std::string name ) :
-			Id( id ), Location( location ), Name( name )
+		//
+		// glUniform1i
+		//
+		void Set( GLint v ) const
 		{
+			gl::Uniform1i( Location, v );
+		}
 
+		//
+		// glUniformMatrix4fv
+		//
+		void Set( const glm::mat4& mat ) const
+		{
+			gl::UniformMatrix4fv( Location, 1, 0, glm::value_ptr( mat ) );
 		}
 	};
 
 	class ShaderProgram
 	{
-	public:
-
-		const GLuint Id;
-
-	private:
+		GLuint Id;
 
 		std::vector<Shader> shaders;
-		std::map<GLint, ShaderUniform> uniforms;
+		std::map<GLint, Uniform> uniforms;
 
 	public:
 
 		template<typename T>
-		GLint GetUniform( T id ) const
+		GLint operator [] ( T id )const { return at( id ); }
+
+		template<typename T>
+		GLint at( T id ) const
 		{
 			return uniforms.at( static_cast<GLint>(id) ).Location;
 		}
 
-		explicit ShaderProgram( std::vector<Shader> shaders, std::vector<ShaderUniformDesc> unis ) :
+		//
+		// Get the Uniform with the specified identifier.
+		//
+		template<typename T>
+		const Uniform& Get( T id ) const
+		{
+			return uniforms.at( static_cast<GLint>(id) );
+		}
+
+		explicit ShaderProgram( std::vector<Shader>&& shaders, const std::vector<Uniform>& unis ) :
 			Id( gl::CreateProgram() ),
-			shaders( shaders )
+			shaders( std::move( shaders ) )
 		{
 			Link();
 			LoadUniforms( unis );
@@ -142,7 +167,11 @@ namespace kodogl
 
 		~ShaderProgram()
 		{
-			gl::DeleteProgram( Id );
+			if (Id != 0)
+			{
+				gl::DeleteProgram( Id );
+				Id = 0;
+			}
 		}
 
 		//
@@ -153,52 +182,7 @@ namespace kodogl
 			gl::UseProgram( Id );
 		}
 
-		void LoadUniforms( std::vector<ShaderUniformDesc> unis )
-		{
-			for (auto& uniform : unis)
-			{
-				if (uniforms.count( uniform.Id ) != 0)
-					throw ShaderException( "Can't have more than one uniform with the same Id." );
-
-				auto location = gl::GetUniformLocation( Id, uniform.Name.c_str() );
-
-				if (location == -1)
-					throw ShaderException( "Couldn't find the uniform." );
-
-				uniforms.emplace( uniform.Id, ShaderUniform{ uniform.Id, location, uniform.Name } );
-			}
-		}
-
-		void Link()
-		{
-			auto linkStatus = 0;
-
-			// Attach our shaders to our program.
-			for (const auto& shader : shaders)
-				gl::AttachShader( Id, shader.Handle() );
-
-			// Link our program.
-			gl::LinkProgram( Id );
-			gl::GetProgramiv( Id, gl::LINK_STATUS, &linkStatus );
-
-			if (linkStatus == gl::FALSE_)
-			{
-				auto maxLength = 0;
-				gl::GetProgramiv( Id, gl::INFO_LOG_LENGTH, &maxLength );
-
-				// The maxLength includes the NULL character.
-				std::string infoLog( maxLength, '\0' );
-				gl::GetProgramInfoLog( Id, maxLength, &maxLength, &infoLog[0] );
-
-				// We don't need the program anymore.
-				gl::DeleteProgram( Id );
-
-				// Don't leak shaders either.
-				for (const auto& shader : shaders)
-					gl::DeleteShader( shader.Handle() );
-
-				throw ShaderException( infoLog );
-			}
-		}
+		void LoadUniforms( const std::vector<Uniform>& unis );
+		void Link();
 	};
 }

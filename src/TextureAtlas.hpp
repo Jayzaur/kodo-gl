@@ -12,7 +12,7 @@ namespace kodogl
 	{
 	public:
 
-		static constexpr auto DefaultCharset = u8" -_.:,;<>|*'^?+´`!abcdefghijklmnopqrstuvwxyzåäöABCDEFGHIJKLMOPQRSTUVWXYZÅÄÖ0123456789";
+		static constexpr char* DefaultCharset = u8" -_.:,;<>|*'^?+´`!@abcdefghijklmnopqrstuvwxyzåäöABCDEFGHIJKLMOPQRSTUVWXYZÅÄÖ0123456789";
 		static constexpr size_t Width = 512;
 		static constexpr size_t Height = 512;
 
@@ -38,6 +38,11 @@ namespace kodogl
 
 	public:
 
+		const AtlasFont& Get( const std::string& name )
+		{
+			return fonts.at( name );
+		}
+
 		//
 		// The amount of space used. (0.0..1.0)
 		//
@@ -51,7 +56,7 @@ namespace kodogl
 			return idOfTexture;
 		}
 
-		const AtlasFont& AddFont( const std::string name, const std::string& filename, float_t size, const std::string& charset = DefaultCharset );
+		const AtlasFont& Add( const std::string name, const std::string& filename, float_t size, const std::string& charset = DefaultCharset );
 		//
 		// Create a new TextureAtlas.
 		//
@@ -103,7 +108,7 @@ namespace kodogl
 					auto& node = nodes[i];
 
 					if (static_cast<size_t>(y + height) < bestHeight ||
-						 y + height == bestHeight && (node.Z > 0 && static_cast<size_t>(node.Z) < bestWidth))
+						 (y + height == bestHeight && (node.Z > 0 && static_cast<size_t>(node.Z) < bestWidth)))
 					{
 						bestHeight = y + height;
 						bestIndex = i;

@@ -41,6 +41,8 @@ namespace kodogl
 		//
 		GLvoid* Pointer;
 
+		VertexAttribute() : Name( nullptr ), Index( 0 ), Components( 0 ), Type( 0 ), normalized( 0 ), Pointer( nullptr ) {}
+
 		explicit VertexAttribute( const char* name, GLint size = 4, GLenum type = gl::FLOAT, GLboolean normalized = false ) :
 			Name( name ), Index( -1 ), Components( size ), Type( type ), normalized( normalized ), Pointer( nullptr )
 		{
