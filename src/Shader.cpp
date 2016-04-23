@@ -30,9 +30,9 @@ namespace kodogl
 		for (const auto& uniform : unis)
 		{
 			if (uniforms.count( uniform.Id ) != 0)
-				throw ShaderException( "Can't have more than one uniform with the same Id." );
+				throw ShaderException( "Can't have more than one uniform with the same identifier." );
 
-			auto location = gl::GetUniformLocation( Id, uniform.Name.c_str() );
+			auto location = gl::GetUniformLocation( nameOfProgram, uniform.Name.c_str() );
 
 			if (location == -1)
 			{
@@ -51,20 +51,20 @@ namespace kodogl
 
 		// Attach our shaders to our program.
 		for (const auto& shader : shaders)
-			gl::AttachShader( Id, shader.Handle() );
+			gl::AttachShader( nameOfProgram, shader.Name() );
 
 		// Link our program.
-		gl::LinkProgram( Id );
-		gl::GetProgramiv( Id, gl::LINK_STATUS, &linkStatus );
+		gl::LinkProgram( nameOfProgram );
+		gl::GetProgramiv( nameOfProgram, gl::LINK_STATUS, &linkStatus );
 
 		if (linkStatus == gl::FALSE_)
 		{
 			auto maxLength = 0;
-			gl::GetProgramiv( Id, gl::INFO_LOG_LENGTH, &maxLength );
+			gl::GetProgramiv( nameOfProgram, gl::INFO_LOG_LENGTH, &maxLength );
 
 			// The maxLength includes the NULL character.
 			std::string infoLog( maxLength, '\0' );
-			gl::GetProgramInfoLog( Id, maxLength, &maxLength, &infoLog[0] );
+			gl::GetProgramInfoLog( nameOfProgram, maxLength, &maxLength, &infoLog[0] );
 
 			throw ShaderException( infoLog );
 		}

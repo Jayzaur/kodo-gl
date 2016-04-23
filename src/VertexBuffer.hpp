@@ -4,69 +4,37 @@
 
 namespace kodogl
 {
-	class VertexBufferException : public std::exception
+	class VertexBufferException : public exception
 	{
-		std::string message;
 	public:
-		explicit VertexBufferException( std::string message ) : std::exception( message.c_str() ), message( message ) {}
+		explicit VertexBufferException( std::string message ) : exception( message ) {}
 	};
 
-	//
-	// Generic vertex attribute.
-	//
 	struct VertexAttribute
 	{
-		//
-		// Attribute name.
-		//
-		const GLchar* Name;
-		//
-		// Index of the generic vertex attribute.
-		//
-		GLuint Index;
-		//
-		// Number of components per generic vertex attribute. (Must be 1, 2, 3, or 4)
-		//
-		GLint Components;
-		//
-		// Data type of each component in the attribute.
-		//
-		GLenum Type;
-		//
-		// Whether fixed-point data values should be normalized (GL_TRUE) or converted directly as fixed-point values (GL_FALSE) when they are accessed.
-		//
-		GLboolean normalized;
-		//
-		// Pointer to the first component of the first attribute element in the array.
-		//
-		GLvoid* Pointer;
+		const GLuint Index;
+		const GLint Components;
+		const GLenum Type;
+		const GLboolean Normalized;
+		const GLvoid* Pointer;
 
-		VertexAttribute() : Name( nullptr ), Index( 0 ), Components( 0 ), Type( 0 ), normalized( 0 ), Pointer( nullptr ) {}
-
-		explicit VertexAttribute( const char* name, GLint size = 4, GLenum type = gl::FLOAT, GLboolean normalized = false ) :
-			Name( name ), Index( -1 ), Components( size ), Type( type ), normalized( normalized ), Pointer( nullptr )
+		VertexAttribute( GLuint index, GLint components, GLenum type, GLboolean normalized, const GLvoid* pointer ) :
+			Index( index ), Components( components ), Type( type ), Normalized( normalized ), Pointer( pointer )
 		{
-		}
-
-		static VertexAttribute Create4f( const char* name, bool normalized = false )
-		{
-			return VertexAttribute( name, 4, gl::FLOAT, normalized );
-		}
-
-		static VertexAttribute Create3f( const char* name, bool normalized = false )
-		{
-			return VertexAttribute( name, 3, gl::FLOAT, normalized );
-		}
-
-		static VertexAttribute Create2f( const char* name, bool normalized = false )
-		{
-			return VertexAttribute( name, 2, gl::FLOAT, normalized );
 		}
 	};
 
 	template<typename TVertex>
 	class VertexBuffer
 	{
+	public:
+
+		static constexpr auto SizeOfVertex = sizeof( TVertex );
+		static constexpr auto SizeOfIndex = sizeof( GLuint );
+		static constexpr std::array<uint8_t, 6> IndicesOfQuad = { 0,1,2, 0,2,3 };
+
+	private:
+
 		enum class VertexBufferState
 		{
 			Clean,
@@ -77,20 +45,25 @@ namespace kodogl
 		struct VertexBufferItem
 		{
 			uint32_t StartOfIndices;
-			uint32_t CountOfIndices;
+			const uint32_t CountOfIndices;
 
 			uint32_t StartOfVertices;
-			uint32_t CountOfVertices;
+			const uint32_t CountOfVertices;
+
+			VertexBufferItem() : StartOfIndices( 0 ), CountOfIndices( 0 ), StartOfVertices( 0 ), CountOfVertices( 0 ) {}
+			VertexBufferItem( uint32_t si, uint32_t ci, uint32_t sv, uint32_t cv ) :
+				StartOfIndices( si ), CountOfIndices( ci ),
+				StartOfVertices( sv ), CountOfVertices( cv )
+			{
+			}
 		};
 
-		// Vector of attributes.
-		std::vector<VertexAttribute> attributes;
 		// Vector of vertices.
 		std::vector<TVertex> vertices;
 		// Vector of indices.
 		std::vector<GLuint> indices;
 		// Vector of items.
-		std::vector<VertexBufferItem> items;
+		std::map<GLint, VertexBufferItem> items;
 
 		// GL identity of the Vertex Array Object.
 		GLuint idOfVAO;
@@ -104,56 +77,97 @@ namespace kodogl
 		// Current size of the indices buffer in the GPU.
 		size_t sizeofGPUIndices;
 
-		// GL primitives to render.
-		GLenum mode;
-
-		// Attribute stride.
-		size_t attributeStride;
-
 		// State of the vertex buffer.
 		VertexBufferState state;
 
+		size_t idCounter;
+
 	public:
+
+		GLuint Name() const
+		{
+			return idOfVAO;
+		}
+
+		const VertexBufferItem& At( GLuint i ) const
+		{
+			return items.at( i );
+		}
+
+		TVertex& VertexAt( size_t i )
+		{
+			state = VertexBufferState::Dirty;
+			return vertices[i];
+		}
+
+		size_t CountOfVertices() const
+		{
+			return vertices.size();
+		}
+
+		auto begin()
+		{
+			return vertices.begin();
+		}
+
+		auto end()
+		{
+			return vertices.end();
+		}
+
+		/*typename std::vector<TVertex>::iterator BeginOf( GLint id )
+		{
+			auto& item = items.at( id );
+			return vertices.begin() + item.StartOfVertices;
+		}
+
+		decltype(std::vector<TVertex>::iterator) EndOf( GLint id )
+		{
+			auto& item = items.at( id );
+			return vertices.begin() + item.StartOfVertices + item.CountOfVertices;
+		}*/
 
 		size_t size() const
 		{
 			return items.size();
 		}
 
-		explicit VertexBuffer( const std::vector<VertexAttribute>& attrs ) :
+		VertexBuffer( const VertexBuffer& ) = delete;
+		VertexBuffer( VertexBuffer&& other ) :
+			vertices( std::move( other.vertices ) ),
+			indices( std::move( other.indices ) ),
+			items( std::move( other.items ) ),
+			idOfVAO( other.idOfVAO ), idOfVertices( other.idOfVertices ), idOfIndices( other.idOfIndices ),
+			sizeofGPUVertices( other.sizeofGPUVertices ), sizeofGPUIndices( other.sizeofGPUIndices ),
+			state( other.state ),
+			idCounter( other.idCounter )
+		{
+			other.idOfVAO = 0;
+			other.idOfIndices = 0;
+			other.idOfVertices = 0;
+		}
+
+		explicit VertexBuffer() :
 			idOfVAO( 0 ), idOfVertices( 0 ), idOfIndices( 0 ),
 			sizeofGPUVertices( 0 ), sizeofGPUIndices( 0 ),
-			mode( 0 ),
-			state( VertexBufferState::Dirty )
+			state( VertexBufferState::Dirty ),
+			idCounter( 0 )
 		{
-			size_t stride = 0;
-			GLchar *pointer = nullptr;
+			gl::GenBuffers( 1, &idOfVertices );
+			gl::GenBuffers( 1, &idOfIndices );
+			gl::GenVertexArrays( 1, &idOfVAO );
 
-			for (const auto& attribute : attrs)
+			gl::BindVertexArray( idOfVAO );
+			gl::BindBuffer( gl::ARRAY_BUFFER, idOfVertices );
+
+			for (const auto& a : TVertex::Attributes())
 			{
-				attributes.push_back( attribute );
-				attributes.at( attributes.size() - 1 ).Pointer = pointer;
-
-				size_t sizeofAttribute;
-
-				switch (attribute.Type)
-				{
-					case gl::BOOL:           sizeofAttribute = sizeof( GLboolean ); break;
-					case gl::BYTE:           sizeofAttribute = sizeof( GLbyte ); break;
-					case gl::UNSIGNED_BYTE:  sizeofAttribute = sizeof( GLubyte ); break;
-					case gl::SHORT:          sizeofAttribute = sizeof( GLshort ); break;
-					case gl::UNSIGNED_SHORT: sizeofAttribute = sizeof( GLushort ); break;
-					case gl::INT:            sizeofAttribute = sizeof( GLint ); break;
-					case gl::UNSIGNED_INT:   sizeofAttribute = sizeof( GLuint ); break;
-					case gl::FLOAT:          sizeofAttribute = sizeof( GLfloat ); break;
-					default:                 throw VertexBufferException( "Unknown attribute type." );
-				}
-
-				stride += attribute.Components * sizeofAttribute;
-				pointer += attribute.Components * sizeofAttribute;
+				gl::EnableVertexAttribArray( a.Index );
+				gl::VertexAttribPointer( a.Index, a.Components, a.Type, a.Normalized, SizeOfVertex, a.Pointer );
 			}
 
-			attributeStride = stride;
+			gl::BindBuffer( gl::ARRAY_BUFFER, 0 );
+			gl::BindBuffer( gl::ELEMENT_ARRAY_BUFFER, idOfIndices );
 		}
 
 		~VertexBuffer()
@@ -163,7 +177,6 @@ namespace kodogl
 			items.clear();
 			indices.clear();
 			vertices.clear();
-			attributes.clear();
 
 			if (idOfVAO != 0) {
 				gl::DeleteVertexArrays( 1, &idOfVAO );
@@ -188,53 +201,45 @@ namespace kodogl
 			if (state == VertexBufferState::Frozen)
 				return;
 
-			if (idOfVertices == 0)
-				gl::GenBuffers( 1, &idOfVertices );
-			if (idOfIndices == 0)
-				gl::GenBuffers( 1, &idOfIndices );
-
 			//
 			// Upload vertices
-			// Always upload vertices first such that indices do not point to non existing data.
 			//
+
+			auto sizeofVertices = vertices.size() * SizeOfVertex;
+
+			gl::BindBuffer( gl::ARRAY_BUFFER, idOfVertices );
+
+			if (sizeofVertices == sizeofGPUVertices)
 			{
-				auto sizeofVertices = vertices.size() * sizeof( TVertex );
-
-				gl::BindBuffer( gl::ARRAY_BUFFER, idOfVertices );
-
-				if (sizeofVertices == sizeofGPUVertices)
-				{
-					gl::BufferSubData( gl::ARRAY_BUFFER, 0, sizeofVertices, vertices.data() );
-				}
-				else
-				{
-					gl::BufferData( gl::ARRAY_BUFFER, sizeofVertices, vertices.data(), gl::DYNAMIC_DRAW );
-					sizeofGPUVertices = sizeofVertices;
-				}
-
-				gl::BindBuffer( gl::ARRAY_BUFFER, 0 );
+				gl::BufferSubData( gl::ARRAY_BUFFER, 0, sizeofVertices, vertices.data() );
 			}
+			else
+			{
+				gl::BufferData( gl::ARRAY_BUFFER, sizeofVertices, vertices.data(), gl::DYNAMIC_DRAW );
+				sizeofGPUVertices = sizeofVertices;
+			}
+
+			gl::BindBuffer( gl::ARRAY_BUFFER, 0 );
 
 			//
 			// Upload indices
 			//
+
+			auto sizeofIndices = indices.size() * SizeOfIndex;
+
+			gl::BindBuffer( gl::ELEMENT_ARRAY_BUFFER, idOfIndices );
+
+			if (sizeofIndices == sizeofGPUIndices)
 			{
-				auto sizeofIndices = indices.size() * sizeof( GLuint );
-
-				gl::BindBuffer( gl::ELEMENT_ARRAY_BUFFER, idOfIndices );
-
-				if (sizeofIndices == sizeofGPUIndices)
-				{
-					gl::BufferSubData( gl::ELEMENT_ARRAY_BUFFER, 0, sizeofIndices, indices.data() );
-				}
-				else
-				{
-					gl::BufferData( gl::ELEMENT_ARRAY_BUFFER, sizeofIndices, indices.data(), gl::DYNAMIC_DRAW );
-					sizeofGPUIndices = sizeofIndices;
-				}
-
-				gl::BindBuffer( gl::ELEMENT_ARRAY_BUFFER, 0 );
+				gl::BufferSubData( gl::ELEMENT_ARRAY_BUFFER, 0, sizeofIndices, indices.data() );
 			}
+			else
+			{
+				gl::BufferData( gl::ELEMENT_ARRAY_BUFFER, sizeofIndices, indices.data(), gl::DYNAMIC_DRAW );
+				sizeofGPUIndices = sizeofIndices;
+			}
+
+			gl::BindBuffer( gl::ELEMENT_ARRAY_BUFFER, 0 );
 		}
 
 		//
@@ -248,32 +253,19 @@ namespace kodogl
 			vertices.clear();
 		}
 
-	private:
-
-		void EnableAttribute( VertexAttribute& attribute ) const
+		void Render( GLenum mode = gl::TRIANGLES )
 		{
-			if (attribute.Index == -1)
-			{
-				GLint program;
-				gl::GetIntegerv( gl::CURRENT_PROGRAM, &program );
-
-				if (program == 0)
-					throw VertexBufferException( "No program currently active." );
-
-				attribute.Index = gl::GetAttribLocation( program, attribute.Name );
-
-				if (attribute.Index == -1)
-					throw VertexBufferException( "Couldn't find the attribute." );
-			}
-
-			gl::EnableVertexAttribArray( attribute.Index );
-			gl::VertexAttribPointer( attribute.Index, attribute.Components, attribute.Type, attribute.normalized, attributeStride, attribute.Pointer );
+			Bind();
+			gl::DrawElements( mode, indices.size(), gl::UNSIGNED_INT, nullptr );
+			Unbind();
 		}
 
-		void RenderSetup( GLenum mode )
+	private:
+
+		void Bind()
 		{
 			// Unbind so no existing VAO-state is overwritten, (e.g. the GL_ELEMENT_ARRAY_BUFFER-binding).
-			RenderFinish();
+			Unbind();
 
 			if (state != VertexBufferState::Clean)
 			{
@@ -281,120 +273,46 @@ namespace kodogl
 				state = VertexBufferState::Clean;
 			}
 
-			if (idOfVAO == 0)
-			{
-				// Generate and set up VAO.
-				gl::GenVertexArrays( 1, &idOfVAO );
-				gl::BindVertexArray( idOfVAO );
-
-				{
-					gl::BindBuffer( gl::ARRAY_BUFFER, idOfVertices );
-
-					for (auto& attribute : attributes)
-					{
-						EnableAttribute( attribute );
-					}
-
-					gl::BindBuffer( gl::ARRAY_BUFFER, 0 );
-				}
-
-				if (indices.size() != 0)
-				{
-					gl::BindBuffer( gl::ELEMENT_ARRAY_BUFFER, idOfIndices );
-				}
-			}
-
 			// Bind VAO for drawing.
 			gl::BindVertexArray( idOfVAO );
-
-			this->mode = mode;
 		}
 
-		static void RenderFinish()
+		static void Unbind()
 		{
 			gl::BindVertexArray( 0 );
 		}
 
-		void RenderItem( size_t index )
+		void RenderItem( GLint id, GLenum mode )
 		{
-			const auto& item = items[index];
-
-			if (indices.size() != 0)
-			{
-				auto start = item.z;
-				auto count = item.w;
-				gl::DrawElements( mode, count, gl::UNSIGNED_INT, reinterpret_cast<void*>(start * sizeof( GLuint )) );
-			}
-			else if (vertices.size() != 0)
-			{
-				auto start = item.x;
-				auto count = item.y;
-				gl::DrawArrays( mode, start * sizeof( TVertex ), count );
-			}
+			const auto& item = items[id];
+			gl::DrawElements( mode, item.CountOfIndices, gl::UNSIGNED_INT, reinterpret_cast<void*>(item.StartOfIndices * sizeof( GLuint )) );
 		}
 
-	public:
-
-		void Render( GLenum mode = gl::TRIANGLES )
+		template<typename TCollection>
+		void InsertIndices( size_t index, const TCollection& iRange )
 		{
-			auto icount = indices.size();
-			auto vcount = vertices.size();
-
-			RenderSetup( mode );
-
-			if (icount)
-			{
-				gl::DrawElements( mode, icount, gl::UNSIGNED_INT, nullptr );
-			}
-			else
-			{
-				gl::DrawArrays( mode, 0, vcount );
-			}
-
-			RenderFinish();
+			std::copy( iRange.begin(), iRange.end(), std::inserter( indices, indices.begin() + index ) );
 		}
 
-		void Push( const std::vector<GLuint>& range )
+		template<typename TCollection>
+		void InsertVertices( size_t index, const TCollection& vRange )
 		{
-			state = VertexBufferState::Dirty;
-			std::copy( range.begin(), range.end(), std::back_inserter( indices ) );
-		}
-
-		void Push( const std::vector<TVertex>& range )
-		{
-			state = VertexBufferState::Dirty;
-			std::copy( range.begin(), range.end(), std::back_inserter( vertices ) );
-		}
-
-		void Insert( size_t index, const std::vector<GLuint>& range )
-		{
-			state = VertexBufferState::Dirty;
-			std::copy( range.begin(), range.end(), std::inserter( indices, indices.begin() + index ) );
-		}
-
-		void Insert( size_t index, const std::vector<TVertex>& range )
-		{
-			state = VertexBufferState::Dirty;
-
 			for (auto& i : indices) {
 				if (i > index) {
 					i += index;
 				}
 			}
 
-			std::copy( range.begin(), range.end(), std::inserter( vertices, vertices.begin() + index ) );
+			std::copy( vRange.begin(), vRange.end(), std::inserter( vertices, vertices.begin() + index ) );
 		}
 
 		void EraseIndices( size_t first, size_t last )
 		{
-			state = VertexBufferState::Dirty;
 			indices.erase( indices.cbegin() + first, indices.cbegin() + last );
 		}
 
 		void EraseVertices( size_t first, size_t last )
 		{
-			state = VertexBufferState::Dirty;
-
 			for (auto& i : indices) {
 				if (i > first) {
 					i -= last - first;
@@ -404,63 +322,104 @@ namespace kodogl
 			vertices.erase( vertices.cbegin() + first, vertices.cbegin() + last );
 		}
 
+	public:
+
+		template<typename TVertices>
+		GLint PushQuads( const TVertices& vRange )
+		{
+			state = VertexBufferState::Dirty;
+
+			auto startOfVertices = vertices.size();
+			auto countOfVertices = vRange.size();
+			auto startOfIndices = indices.size();
+			auto countOfIndices = (countOfVertices / 4) * 6;
+
+			for (auto i : Range( 0, static_cast<int>(countOfVertices), 4 ))
+			{
+				auto vBeganAt = vertices.size();
+
+				for (auto iofV : Range( 4 ))
+					vertices.push_back( vRange[i + iofV] );
+
+				for (auto iofI : Range( 6 ))
+					indices.push_back( IndicesOfQuad[iofI] + vBeganAt );
+			}
+
+			idCounter++;
+			items.emplace( idCounter, VertexBufferItem{ startOfIndices, countOfIndices, startOfVertices, countOfVertices } );
+			return idCounter;
+		}
+
+		template<typename TVertices>
+		GLint PushQuad( const TVertices& vRange )
+		{
+			state = VertexBufferState::Dirty;
+
+			auto startOfVertices = vertices.size();
+			auto startOfIndices = indices.size();
+
+			for (const auto& v : vRange)
+				vertices.push_back( v );
+
+			for (const auto& i : IndicesOfQuad)
+				indices.push_back( i + startOfVertices );
+
+			idCounter++;
+			items.emplace( idCounter, VertexBufferItem{ startOfIndices, 6, startOfVertices, 4 } );
+			return idCounter;
+		}
+
 		//
 		// Push vertices and indices to the back of the buffer.
 		//
-		size_t Push( const std::vector<TVertex>& vertices, const std::vector<GLuint>& indices )
+		template<typename TVertices, typename TIndices>
+		GLint Push( const TVertices& vRange, const TIndices& iRange )
 		{
-			return Insert( items.size(), vertices, indices );
-		}
-
-		size_t Insert( size_t index, const std::vector<TVertex>& vertices, const std::vector<GLuint>& indices )
-		{
-			auto startOfVertices = this->vertices.size();
-			auto startOfIndices = this->indices.size();
-
-			Push( vertices );
-			Push( indices );
-
-			// Update indices within the vertex buffer.
-			for (size_t i = 0; i < indices.size(); ++i)
-			{
-				this->indices[startOfIndices + i] += startOfVertices;
-			}
-
-			// Insert item.
-			VertexBufferItem item{ 0 };
-			item.StartOfVertices = startOfVertices;
-			item.CountOfVertices = vertices.size();
-			item.StartOfIndices = startOfIndices;
-			item.CountOfIndices = indices.size();
-			items.insert( items.cbegin() + index, item );
 			state = VertexBufferState::Dirty;
-			return index;
+
+			auto startOfVertices = vertices.size();
+			auto startOfIndices = indices.size();
+
+			for (const auto& v : vRange)
+				vertices.push_back( v );
+
+			for (const auto& i : iRange)
+				indices.push_back( i + startOfVertices );
+
+			idCounter++;
+			items.emplace( idCounter, VertexBufferItem{ startOfIndices, iRange.size(), startOfVertices, vRange.size() } );
+			return idCounter;
 		}
 
-		void Erase( size_t index )
+		void Erase( GLint id )
 		{
-			auto& item = items[index];
-			auto vstart = item.vstart;
-			auto vcount = item.vcount;
-			auto istart = item.istart;
-			auto icount = item.icount;
+			if (!items.count( id ))
+				return;
+
+			state = VertexBufferState::Dirty;
+
+			auto& item = items[id];
+			auto vstart = item.StartOfVertices;
+			auto vcount = item.CountOfVertices;
+			auto istart = item.StartOfIndices;
+			auto icount = item.CountOfIndices;
 
 			// Update items.
 			for (size_t i = 0; i < items.size(); ++i)
 			{
-				item = items[i];
+				auto& it = items[i];
 
-				if (item.vstart > vstart)
+				if (it.StartOfVertices > vstart)
 				{
-					item.vstart -= vcount;
-					item.istart -= icount;
+					it.StartOfVertices -= vcount;
+					it.StartOfIndices -= icount;
 				}
 			}
 
 			EraseIndices( istart, istart + icount );
 			EraseVertices( vstart, vstart + vcount );
-			items.erase( items.begin() + index );
-			state = VertexBufferState::Dirty;
+
+			items.erase( id );
 		}
 	};
 }

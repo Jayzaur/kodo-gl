@@ -121,12 +121,12 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)deps\freetype;$(ProjectDir)deps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <Link>
@@ -135,6 +135,7 @@
       <AdditionalLibraryDirectories>E:\Projects\kodo-gl\deps;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /i /y /d $(ProjectDir)assets $(OutDir)assets</Command>
@@ -143,12 +144,12 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)deps\freetype;$(ProjectDir)deps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <Link>
@@ -157,6 +158,7 @@
       <AdditionalLibraryDirectories>E:\Projects\kodo-gl\deps;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /i /y /d $(ProjectDir)assets $(OutDir)assets</Command>
@@ -167,7 +169,7 @@
     <ClCompile Include="deps\gl_core_4_4.cpp" />
     <ClCompile Include="src\kodo-gl.cpp" />
     <ClCompile Include="src\Shader.cpp" />
-    <ClCompile Include="src\TextureFont.cpp" />
+    <ClCompile Include="src\AtlasFont.cpp" />
     <ClCompile Include="src\VertexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -400,20 +402,30 @@
     <ClInclude Include="deps\glm\vec4.hpp" />
     <ClInclude Include="deps\glm\vector_relational.hpp" />
     <ClInclude Include="deps\gl_core_4_4.hpp" />
+    <ClInclude Include="deps\libpng\png.h" />
+    <ClInclude Include="deps\libpng\pngconf.h" />
+    <ClInclude Include="deps\libpng\pngdebug.h" />
+    <ClInclude Include="deps\libpng\pnginfo.h" />
+    <ClInclude Include="deps\libpng\pnglibconf.h" />
+    <ClInclude Include="deps\libpng\pngpriv.h" />
+    <ClInclude Include="deps\libpng\pngstruct.h" />
     <ClInclude Include="deps\utf8\utf8.h" />
     <ClInclude Include="deps\utf8\utf8\checked.h" />
     <ClInclude Include="deps\utf8\utf8\core.h" />
     <ClInclude Include="deps\utf8\utf8\unchecked.h" />
     <ClInclude Include="src\kodo-gl.hpp" />
     <ClInclude Include="src\Shader.hpp" />
-    <ClInclude Include="src\Texture.hpp" />
-    <ClInclude Include="src\TextureAtlas.hpp" />
-    <ClInclude Include="src\TextureFont.hpp" />
+    <ClInclude Include="src\AtlasFonts.hpp" />
+    <ClInclude Include="src\Atlas.hpp" />
+    <ClInclude Include="src\AtlasFont.hpp" />
+    <ClInclude Include="src\Texture.h" />
     <ClInclude Include="src\VertexBuffer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="deps\freetype\freetype263.lib" />
     <Library Include="deps\GLFW\glfw3.lib" />
+    <Library Include="deps\libpng\libpng16.lib" />
+    <Library Include="deps\libpng\zlib.lib" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="assets\PatuaOne.ttf">
@@ -422,6 +434,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\fragment-font.glsl" />
+    <None Include="assets\fragment-texture.glsl" />
+    <None Include="assets\vertex-texture.glsl" />
     <None Include="deps\glm\detail\func_common.inl" />
     <None Include="deps\glm\detail\func_exponential.inl" />
     <None Include="deps\glm\detail\func_geometric.inl" />
@@ -531,7 +545,7 @@
     <None Include="deps\glm\gtx\vector_angle.inl" />
     <None Include="deps\glm\gtx\vector_query.inl" />
     <None Include="deps\glm\gtx\wrap.inl" />
-    <ClCompile Include="src\TextureAtlas.cpp" />
+    <ClCompile Include="src\Atlas.cpp" />
     <Text Include="assets\vertex-font.glsl">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>

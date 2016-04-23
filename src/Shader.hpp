@@ -7,51 +7,50 @@
 
 namespace kodogl
 {
-	class ShaderException : public std::exception
+	class ShaderException : public exception
 	{
-		std::string message;
 	public:
-		explicit ShaderException( std::string message ) : std::exception( message.c_str() ), message( message ) {}
+		explicit ShaderException( std::string message ) : exception( message ) {}
 	};
 
 	class Shader
 	{
 		std::string source;
-		GLuint shaderHandle;
-		GLenum shaderType;
+		GLuint nameOfShader;
+		GLenum typeOfShader;
 
 	public:
 
-		GLuint Handle() const
+		GLuint Name() const
 		{
-			return shaderHandle;
+			return nameOfShader;
 		}
 
 		Shader( const Shader& other ) = delete;
 
 		Shader( Shader&& other ) :
 			source( std::move( other.source ) ),
-			shaderHandle( other.shaderHandle ),
-			shaderType( other.shaderType )
+			nameOfShader( other.nameOfShader ),
+			typeOfShader( other.typeOfShader )
 		{
-			other.shaderHandle = 0;
-			other.shaderType = 0;
+			other.nameOfShader = 0;
+			other.typeOfShader = 0;
 		}
 
 		explicit Shader( std::string source, GLenum type ) :
 			source( source ),
-			shaderHandle( gl::CreateShader( type ) ),
-			shaderType( type )
+			nameOfShader( gl::CreateShader( type ) ),
+			typeOfShader( type )
 		{
 			Compile();
 		}
 
 		~Shader()
 		{
-			if (shaderHandle != 0)
+			if (nameOfShader != 0)
 			{
-				gl::DeleteShader( shaderHandle );
-				shaderHandle = 0;
+				gl::DeleteShader( nameOfShader );
+				nameOfShader = 0;
 			}
 		}
 
@@ -60,17 +59,17 @@ namespace kodogl
 			auto sourcePtr = source.c_str();
 			auto compileStatus = 0;
 
-			gl::ShaderSource( shaderHandle, 1, &sourcePtr, nullptr );
-			gl::CompileShader( shaderHandle );
-			gl::GetShaderiv( shaderHandle, gl::COMPILE_STATUS, &compileStatus );
+			gl::ShaderSource( nameOfShader, 1, &sourcePtr, nullptr );
+			gl::CompileShader( nameOfShader );
+			gl::GetShaderiv( nameOfShader, gl::COMPILE_STATUS, &compileStatus );
 
 			if (compileStatus == gl::FALSE_)
 			{
 				auto infoLength = 0;
-				gl::GetShaderiv( shaderHandle, gl::INFO_LOG_LENGTH, &infoLength );
+				gl::GetShaderiv( nameOfShader, gl::INFO_LOG_LENGTH, &infoLength );
 
 				std::string infoLog( infoLength, '\0' );
-				gl::GetShaderInfoLog( shaderHandle, infoLength, &infoLength, &infoLog[0] );
+				gl::GetShaderInfoLog( nameOfShader, infoLength, &infoLength, &infoLog[0] );
 
 				throw ShaderException( infoLog );
 			}
@@ -113,17 +112,19 @@ namespace kodogl
 		{
 		}
 
-		//
-		// glUniform1i
-		//
+		/// <summary>
+		/// glUniform1i
+		/// </summary>
+		/// <param name="v">The integer.</param>
 		void Set( GLint v ) const
 		{
 			gl::Uniform1i( Location, v );
 		}
 
-		//
-		// glUniformMatrix4fv
-		//
+		/// <summary>
+		/// glUniformMatrix4fv
+		/// </summary>
+		/// <param name="mat">The matrix.</param>
 		void Set( const glm::mat4& mat ) const
 		{
 			gl::UniformMatrix4fv( Location, 1, 0, glm::value_ptr( mat ) );
@@ -132,7 +133,7 @@ namespace kodogl
 
 	class ShaderProgram
 	{
-		GLuint Id;
+		GLuint nameOfProgram;
 
 		std::vector<Shader> shaders;
 		std::map<GLint, Uniform> uniforms;
@@ -158,7 +159,7 @@ namespace kodogl
 		}
 
 		explicit ShaderProgram( std::vector<Shader>&& shaders, const std::vector<Uniform>& unis ) :
-			Id( gl::CreateProgram() ),
+			nameOfProgram( gl::CreateProgram() ),
 			shaders( std::move( shaders ) )
 		{
 			Link();
@@ -167,10 +168,10 @@ namespace kodogl
 
 		~ShaderProgram()
 		{
-			if (Id != 0)
+			if (nameOfProgram != 0)
 			{
-				gl::DeleteProgram( Id );
-				Id = 0;
+				gl::DeleteProgram( nameOfProgram );
+				nameOfProgram = 0;
 			}
 		}
 
@@ -179,7 +180,7 @@ namespace kodogl
 		//
 		void Use() const
 		{
-			gl::UseProgram( Id );
+			gl::UseProgram( nameOfProgram );
 		}
 
 		void LoadUniforms( const std::vector<Uniform>& unis );
