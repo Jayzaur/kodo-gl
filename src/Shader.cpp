@@ -5,7 +5,7 @@
 
 namespace kodogl
 {
-	std::string Shader::Source( const std::string& filename )
+	std::string Shader::SourceFromFile( const std::string& filename )
 	{
 		std::ifstream stream{ filename, std::ifstream::in | std::ifstream::binary };
 
@@ -45,7 +45,7 @@ namespace kodogl
 		}
 	}
 
-	void ShaderProgram::Link()
+	void ShaderProgram::Link( const std::vector<Shader>& shaders )
 	{
 		auto linkStatus = 0;
 
@@ -62,13 +62,13 @@ namespace kodogl
 			auto maxLength = 0;
 			gl::GetProgramiv( nameOfProgram, gl::INFO_LOG_LENGTH, &maxLength );
 
-			// The maxLength includes the NULL character.
 			std::string infoLog( maxLength, '\0' );
 			gl::GetProgramInfoLog( nameOfProgram, maxLength, &maxLength, &infoLog[0] );
 
-			throw ShaderException( infoLog );
-		}
+			std::ostringstream errorStream;
+			errorStream << "Error while linking " << programStr.c_str() << ": " << infoLog.c_str();
 
-		shaders.clear();
+			throw ShaderException( errorStream.str() );
+		}
 	}
 }

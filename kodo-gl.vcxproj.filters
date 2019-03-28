@@ -34,6 +34,12 @@
     <ClCompile Include="src\AtlasFont.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\WindowContext.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="deps\gl_core_4_4.hpp">
@@ -777,6 +783,27 @@
     <ClInclude Include="src\Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="assets\PatuaOne.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shaders.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\WindowContext.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Window.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Brush.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Windows.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Text.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="deps\GLFW\glfw3.lib" />
@@ -1115,11 +1142,9 @@
     <None Include="deps\glm\gtx\wrap.inl">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="assets\fragment-font.glsl" />
-    <None Include="assets\vertex-texture.glsl" />
     <None Include="assets\fragment-texture.glsl" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="assets\vertex-font.glsl" />
+    <Text Include="assets\vertex-texture.glsl" />
   </ItemGroup>
 </Project>

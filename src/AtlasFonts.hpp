@@ -130,7 +130,7 @@ namespace kodogl
 		float_t underlineThickness;
 		float_t BaselineToBaseline;
 
-		std::map<utf8::uint32_t, AtlasGlyph> glyphs;
+		std::unordered_map<utf8::uint32_t, AtlasGlyph> glyphs;
 
 		explicit AtlasLoaderFont( float_t size ) : Size( size ), height( 0 ), linegap( 0 ), ascender( 0 ), descender( 0 ), underlinePosition( 0 ), underlineThickness( 0 ), BaselineToBaseline( 0 )
 		{

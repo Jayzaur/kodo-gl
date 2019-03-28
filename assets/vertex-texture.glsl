@@ -1,8 +1,8 @@
 #version 400
 
-layout (location = 0) in vec2 inputXY;
-layout (location = 1) in vec2 inputST;
-layout (location = 2) in vec4 inputRGBA;
+layout ( location = 0 ) in vec2 inputXY;
+layout ( location = 1 ) in vec2 inputST;
+layout ( location = 2 ) in vec4 inputRGBA;
 
 uniform mat4 Model;
 uniform mat4 View;

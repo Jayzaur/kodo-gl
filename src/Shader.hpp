@@ -13,11 +13,16 @@ namespace kodogl
 		explicit ShaderException( std::string message ) : exception( message ) {}
 	};
 
-	class Shader
+	enum class ShaderType : GLenum
 	{
-		std::string source;
+		Vertex = gl::VERTEX_SHADER,
+		Fragment = gl::FRAGMENT_SHADER
+	};
+
+	class Shader : public nocopy
+	{
 		GLuint nameOfShader;
-		GLenum typeOfShader;
+		ShaderType typeOfShader;
 
 	public:
 
@@ -26,23 +31,18 @@ namespace kodogl
 			return nameOfShader;
 		}
 
-		Shader( const Shader& other ) = delete;
-
 		Shader( Shader&& other ) :
-			source( std::move( other.source ) ),
 			nameOfShader( other.nameOfShader ),
 			typeOfShader( other.typeOfShader )
 		{
 			other.nameOfShader = 0;
-			other.typeOfShader = 0;
 		}
 
-		explicit Shader( std::string source, GLenum type ) :
-			source( source ),
-			nameOfShader( gl::CreateShader( type ) ),
+		Shader( ShaderType type, std::string source ) :
+			nameOfShader( gl::CreateShader( (GLenum)type ) ),
 			typeOfShader( type )
 		{
-			Compile();
+			Compile( source );
 		}
 
 		~Shader()
@@ -54,7 +54,7 @@ namespace kodogl
 			}
 		}
 
-		void Compile() const
+		void Compile( std::string source ) const
 		{
 			auto sourcePtr = source.c_str();
 			auto compileStatus = 0;
@@ -77,15 +77,15 @@ namespace kodogl
 
 		static Shader CreateVertex( std::string source )
 		{
-			return Shader{ source, gl::VERTEX_SHADER };
+			return Shader{ ShaderType::Vertex, source };
 		}
 
 		static Shader CreateFragment( std::string source )
 		{
-			return Shader{ source, gl::FRAGMENT_SHADER };
+			return Shader{ ShaderType::Fragment, source };
 		}
 
-		static std::string Source( const std::string& filename );
+		static std::string SourceFromFile( const std::string& filename );
 	};
 
 	struct Uniform
@@ -108,45 +108,58 @@ namespace kodogl
 		//
 		template<typename TId>
 		Uniform( TId id, std::string name, GLint location = -1 ) :
-			Id( static_cast<GLint>(id) ), Name( name ), Location( location )
+			Id( static_cast<GLint>(id) ),
+			Name( name ),
+			Location( location )
 		{
 		}
 
-		/// <summary>
-		/// glUniform1i
-		/// </summary>
-		/// <param name="v">The integer.</param>
-		void Set( GLint v ) const
+		const Uniform& operator = ( GLint v ) const { return Set( v ); }
+		const Uniform& Set( GLint v ) const
 		{
 			gl::Uniform1i( Location, v );
+			return *this;
 		}
 
-		/// <summary>
-		/// glUniformMatrix4fv
-		/// </summary>
-		/// <param name="mat">The matrix.</param>
-		void Set( const glm::mat4& mat ) const
+		const Uniform& operator = ( GLfloat v ) const { return Set( v ); }
+		const Uniform& Set( GLfloat v ) const
 		{
-			gl::UniformMatrix4fv( Location, 1, 0, glm::value_ptr( mat ) );
+			gl::Uniform1f( Location, v );
+			return *this;
+		}
+
+		const Uniform& operator = ( const glm::vec4& v ) const { return Set( v ); }
+		const Uniform& Set( const glm::vec4& v ) const
+		{
+			gl::Uniform4f( Location, v.x, v.y, v.z, v.w );
+			return *this;
+		}
+
+		const Uniform& operator = ( const glm::mat4& v ) const { return Set( v ); }
+		const Uniform& Set( const glm::mat4& v ) const
+		{
+			gl::UniformMatrix4fv( Location, 1, 0, glm::value_ptr( v ) );
+			return *this;
 		}
 	};
 
-	class ShaderProgram
+	class ShaderProgram : public nocopy
 	{
 		GLuint nameOfProgram;
 
-		std::vector<Shader> shaders;
-		std::map<GLint, Uniform> uniforms;
+		std::string programStr;
+		std::unordered_map<GLint, Uniform> uniforms;
 
 	public:
 
+		//
+		// Get the Uniform with the specified identifier.
+		//
 		template<typename T>
-		GLint operator [] ( T id )const { return at( id ); }
-
-		template<typename T>
-		GLint at( T id ) const
+		const Uniform& operator []( T id ) const
 		{
-			return uniforms.at( static_cast<GLint>(id) ).Location;
+			static_assert(std::is_integral<T>::value || std::is_enum<T>::value, "T must be convertible to an integral.");
+			return uniforms.at( static_cast<GLint>(id) );
 		}
 
 		//
@@ -155,14 +168,15 @@ namespace kodogl
 		template<typename T>
 		const Uniform& Get( T id ) const
 		{
+			static_assert(std::is_integral<T>::value || std::is_enum<T>::value, "T must be convertible to an integral.");
 			return uniforms.at( static_cast<GLint>(id) );
 		}
 
-		explicit ShaderProgram( std::vector<Shader>&& shaders, const std::vector<Uniform>& unis ) :
+		ShaderProgram( std::string programStr, const std::vector<Shader>& shaders, const std::vector<Uniform>& unis ) :
 			nameOfProgram( gl::CreateProgram() ),
-			shaders( std::move( shaders ) )
+			programStr( programStr )
 		{
-			Link();
+			Link( shaders );
 			LoadUniforms( unis );
 		}
 
@@ -183,7 +197,9 @@ namespace kodogl
 			gl::UseProgram( nameOfProgram );
 		}
 
+	private:
+
 		void LoadUniforms( const std::vector<Uniform>& unis );
-		void Link();
+		void Link( const std::vector<Shader>& shaders );
 	};
 }

@@ -43,7 +43,7 @@ namespace kodogl
 			throw TextureException( "libpng: Unknown/unsupported color type -> " + std::string( msg ) );
 		}
 
-		explicit TextureLoader( const std::string& filename, bool onlyOpacity )
+		TextureLoader( const std::string& filename, bool onlyOpacity )
 		{
 			png_byte header[8];
 
@@ -159,29 +159,40 @@ namespace kodogl
 
 	class Texture
 	{
-		GLuint nameOfTeture;
-		GLenum format;
+		
+		glm::uint32 ifOfTexture;
+		glm::uint32 format;
 
 		glm::vec2 dimensions;
 
 	public:
 
-		GLuint Name() const
+		glm::uint32 Name() const
 		{
-			return nameOfTeture;
+			return ifOfTexture;
 		}
 
-		explicit Texture( const std::string& filename, bool onlyOpacity )
+		Texture( const std::string& filename, bool onlyOpacity )
 		{
 			TextureLoader loader( filename, onlyOpacity );
-			nameOfTeture = loader.id;
+			ifOfTexture = loader.id;
 			format = loader.format;
 			dimensions = loader.dimensions;
 		}
 
-		void Bind() const
+		~Texture()
 		{
-			gl::BindTexture( gl::TEXTURE_2D, nameOfTeture );
+			if (ifOfTexture != 0)
+			{
+				gl::DeleteTextures( 1, &ifOfTexture );
+				ifOfTexture = 0;
+			}
+		}
+
+		void Bind( glm::uint8 textureUnit ) const
+		{
+			gl::ActiveTexture( gl::TEXTURE0 + textureUnit );
+			gl::BindTexture( gl::TEXTURE_2D, ifOfTexture );
 		}
 	};
 }

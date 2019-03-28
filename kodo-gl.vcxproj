@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -21,33 +21,33 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D318AB46-B9AD-47D7-9627-E9AEE486978F}</ProjectGuid>
     <RootNamespace>kodogl</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
     <CLRSupport>false</CLRSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
     <CLRSupport>false</CLRSupport>
@@ -71,19 +71,19 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)\bin\$(Configuration)\</OutDir>
+    <OutDir>.\kodo-gl-sandbox\bin\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\bin\int\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)\bin\$(Configuration)\</OutDir>
+    <OutDir>.\kodo-gl-sandbox\bin\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\bin\int\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)\bin\$(Configuration)\</OutDir>
+    <OutDir>.\kodo-gl-sandbox\bin\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\bin\int\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)\bin\$(Configuration)\</OutDir>
+    <OutDir>.\kodo-gl-sandbox\bin\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\bin\int\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -97,6 +97,7 @@
       <AdditionalLibraryDirectories>E:\Projects\kodo-gl\deps;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <FullProgramDatabaseFile>true</FullProgramDatabaseFile>
+      <SubSystem>NotSet</SubSystem>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /i /y /d $(ProjectDir)assets $(OutDir)assets</Command>
@@ -113,6 +114,7 @@
       <AdditionalLibraryDirectories>E:\Projects\kodo-gl\deps;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <FullProgramDatabaseFile>true</FullProgramDatabaseFile>
+      <SubSystem>NotSet</SubSystem>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /i /y /d $(ProjectDir)assets $(OutDir)assets</Command>
@@ -171,8 +173,11 @@
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\AtlasFont.cpp" />
     <ClCompile Include="src\VertexBuffer.cpp" />
+    <ClCompile Include="src\Window.cpp" />
+    <ClCompile Include="src\WindowContext.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="assets\PatuaOne.hpp" />
     <ClInclude Include="deps\freetype\freetype\config\ftconfig.h" />
     <ClInclude Include="deps\freetype\freetype\config\ftheader.h" />
     <ClInclude Include="deps\freetype\freetype\config\ftmodule.h" />
@@ -413,13 +418,19 @@
     <ClInclude Include="deps\utf8\utf8\checked.h" />
     <ClInclude Include="deps\utf8\utf8\core.h" />
     <ClInclude Include="deps\utf8\utf8\unchecked.h" />
+    <ClInclude Include="src\Brush.hpp" />
     <ClInclude Include="src\kodo-gl.hpp" />
     <ClInclude Include="src\Shader.hpp" />
     <ClInclude Include="src\AtlasFonts.hpp" />
     <ClInclude Include="src\Atlas.hpp" />
     <ClInclude Include="src\AtlasFont.hpp" />
+    <ClInclude Include="src\Shaders.hpp" />
+    <ClInclude Include="src\Text.hpp" />
     <ClInclude Include="src\Texture.h" />
     <ClInclude Include="src\VertexBuffer.hpp" />
+    <ClInclude Include="src\Window.hpp" />
+    <ClInclude Include="src\WindowContext.hpp" />
+    <ClInclude Include="src\Windows.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="deps\freetype\freetype263.lib" />
@@ -433,9 +444,7 @@
     </Font>
   </ItemGroup>
   <ItemGroup>
-    <None Include="assets\fragment-font.glsl" />
     <None Include="assets\fragment-texture.glsl" />
-    <None Include="assets\vertex-texture.glsl" />
     <None Include="deps\glm\detail\func_common.inl" />
     <None Include="deps\glm\detail\func_exponential.inl" />
     <None Include="deps\glm\detail\func_geometric.inl" />
@@ -546,7 +555,7 @@
     <None Include="deps\glm\gtx\vector_query.inl" />
     <None Include="deps\glm\gtx\wrap.inl" />
     <ClCompile Include="src\Atlas.cpp" />
-    <Text Include="assets\vertex-font.glsl">
+    <Text Include="assets\vertex-texture.glsl">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</DeploymentContent>

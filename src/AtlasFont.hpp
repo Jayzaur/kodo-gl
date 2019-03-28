@@ -14,20 +14,20 @@ namespace kodogl
 	class GlyphEnumerator;
 
 	template<typename TIntegral>
-	class range_iterator
+	class RangeIterator
 	{
 		TIntegral value;
 		const TIntegral step;
 
 	public:
 
-		explicit range_iterator( TIntegral value, TIntegral step ) :
+		explicit RangeIterator( TIntegral value, TIntegral step ) :
 			value( value ), step( step )
 		{
 			static_assert(std::is_integral<TIntegral>::value, "range_iterator only accepts integral types.");
 		}
 
-		bool operator != ( const range_iterator& other ) const
+		bool operator != ( const RangeIterator& other ) const
 		{
 			return value != other.value;
 		}
@@ -37,7 +37,7 @@ namespace kodogl
 			return value;
 		}
 
-		range_iterator& operator++()
+		RangeIterator& operator++()
 		{
 			value += step;
 			return *this;
@@ -45,7 +45,7 @@ namespace kodogl
 	};
 
 	template<typename TIntegral>
-	class range
+	class IteratorRange
 	{
 		const TIntegral from;
 		const TIntegral to;
@@ -53,27 +53,27 @@ namespace kodogl
 
 	public:
 
-		explicit range( TIntegral to ) : range( 0, to, 1 ) {}
-		explicit range( TIntegral from, TIntegral to, TIntegral step )
+		explicit IteratorRange( TIntegral to ) : IteratorRange( 0, to, 1 ) {}
+		explicit IteratorRange( TIntegral from, TIntegral to, TIntegral step )
 			: from( from ), to( to ), step( step )
 		{
 			static_assert(std::is_integral<TIntegral>::value, "range only accepts integral types.");
 		}
 
-		range_iterator<TIntegral> begin() const { return range_iterator<TIntegral>( from, step ); }
-		range_iterator<TIntegral> end() const { return range_iterator<TIntegral>( to, step ); }
+		RangeIterator<TIntegral> begin() const { return RangeIterator<TIntegral>( from, step ); }
+		RangeIterator<TIntegral> end() const { return RangeIterator<TIntegral>( to, step ); }
 	};
 
-	template<class TIntegral>
+	template<typename TIntegral>
 	auto Range( TIntegral to )
 	{
-		return range<TIntegral>( 0, to, 1 );
+		return IteratorRange<TIntegral>( 0, to, 1 );
 	}
 
-	template<class TIntegral>
+	template<typename TIntegral>
 	auto Range( TIntegral from, TIntegral to, TIntegral step )
 	{
-		return range<TIntegral>( from, to, step );
+		return IteratorRange<TIntegral>( from, to, step );
 	}
 
 	struct AtlasLoaderFont;
@@ -85,14 +85,16 @@ namespace kodogl
 	{
 	public:
 
+		static constexpr auto NullCodepoint = size_t( -1 );
 		static constexpr auto FallbackCodepoint = utf8::uint32_t( 63 );
 
-	private:
 		const float_t Size;
 
 		Atlas& atlas;
 
-		std::map<utf8::uint32_t, AtlasGlyph> glyphs;
+	private:
+
+		std::unordered_map<utf8::uint32_t, AtlasGlyph> glyphs;
 
 		//
 		// This field is simply used to compute a default line spacing (i.e., the baseline-to-baseline distance) when writing text with this font. 
@@ -136,6 +138,11 @@ namespace kodogl
 
 		float_t BaselineToBaseline;
 
+		const Atlas& GetAtlas() const
+		{
+			return atlas;
+		}
+
 		AtlasFont( const AtlasFont& that ) = delete;
 		AtlasFont( AtlasFont&& that );
 
@@ -154,15 +161,29 @@ namespace kodogl
 		CodepointEnumerator codepoints;
 		const AtlasFont& font;
 		bool fallback;
+
 	public:
-		GlyphEnumerator( const AtlasFont& font, const std::string& str, bool fallback ) : codepoints( str ), font( font ), fallback( fallback ) {}
+
+		GlyphEnumerator( const AtlasFont& font, const std::string& str, bool fallback ) :
+			codepoints( str ),
+			font( font ),
+			fallback( fallback )
+		{
+		}
+
 		const AtlasGlyph& Next()
 		{
 			auto codepoint = codepoints.Next();
+
 			if (font.HasGlyph( codepoint ))
-				return font.GetGlyph( size_t( -1 ) );
+				return font.GetGlyph( AtlasFont::NullCodepoint );
+
 			return font.GetGlyph( codepoint, fallback );
 		}
-		operator bool() const { return codepoints; }
+
+		operator bool() const
+		{
+			return codepoints;
+		}
 	};
 }

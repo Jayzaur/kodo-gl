@@ -1,14 +1,14 @@
 #pragma once
 
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstdio>
 #include <vector>
 #include <string>
 #include <array>
 #include <vector>
 #include <memory>
-#include <map>
-#include <assert.h>
+#include <unordered_map>
+#include <cassert>
 
 #pragma comment (lib, "opengl32")
 #include <gl_core_4_4.hpp>
@@ -16,8 +16,6 @@
 #pragma comment (lib, "deps/freetype/freetype263")
 #include <ft2build.h>
 #include FT_FREETYPE_H
-
-
 
 #pragma comment (lib, "deps/GLFW/glfw3")
 #include <GLFW/glfw3.h>
@@ -30,10 +28,21 @@
 
 #define GLM_FORCE_CXX11
 #include <glm/glm.hpp>
+#include <glm/gtc/packing.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace kodogl
 {
+	class nocopy
+	{
+	protected:
+		nocopy() = default;
+		~nocopy() = default;
+
+		nocopy( nocopy const & ) = delete;
+		void operator=( nocopy const &x ) = delete;
+	};
+
 	class exception : public std::exception
 	{
 		std::string message;
